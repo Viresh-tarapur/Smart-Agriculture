@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Trending Crops | AgriVision</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --vibrant-green: #00c853;
+            --sunshine-yellow: #ffd600;
+            --berry-red: #d50000;
+            --royal-purple: #651fff;
+            --deep-blue: #2962ff;
+            --dark-text: #263238;
+            --light-text: #f5f5f5;
+            --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4f0f8 100%);
+            color: var(--dark-text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        header {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: var(--light-text);
+            text-align: center;
+            padding: 5rem 1rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%23f5f7fa"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%23f5f7fa"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23f5f7fa"/></svg>');
+            background-size: cover;
+            z-index: 1;
+        }
+        
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .crops-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+            padding: 0 3rem;
+            max-width: 1400px;
+            margin: 0 auto 5rem;
+        }
+        
+        .crop-card {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            height: 350px;
+        }
+        
+        .crop-card:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+        }
+        
+        .crop-image {
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        
+        .crop-card:hover .crop-image {
+            transform: scale(1.1);
+        }
+        
+        .crop-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%);
+        }
+        
+        .crop-name {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 2.2rem;
+            font-weight: 700;
+            z-index: 2;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            padding: 0 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .crop-card:hover .crop-name {
+            transform: translateY(-10px);
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7);
+        }
+        
+        .crop-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--dark-text);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 2;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--dark-text);
+            color: var(--light-text);
+            position: relative;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%23263238"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%23263238"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23263238"/></svg>');
+            background-size: cover;
+        }
+        
+        .footer-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        footer h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--sunshine-yellow);
+        }
+        
+        footer p {
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 3rem auto;
+            max-width: 800px;
+            border-radius: 10px;
+            overflow: hidden;
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            background-color: var(--vibrant-green);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .modal-section {
+            margin-bottom: 2rem;
+        }
+        
+        .modal-section h3 {
+            color: var(--vibrant-green);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--sunshine-yellow);
+            padding-bottom: 0.5rem;
+        }
+        
+        .modal-section ul {
+            list-style-position: inside;
+            padding-left: 1rem;
+        }
+        
+        .modal-section li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .budget-details {
+            background-color: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+        
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .budget-total {
+            font-weight: bold;
+            border-top: 1px solid #ddd;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .gallery-image {
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .gallery-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-image:hover img {
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 768px) {
+            .crops-container {
+                grid-template-columns: 1fr;
+                padding: 0 1.5rem;
+                gap: 2rem;
+            }
+            
+            .crop-card {
+                height: 300px;
+            }
+            
+            .crop-name {
+                font-size: 2rem;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
+        }
+
+        /* Back button styles */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--dark-text);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-button:hover {
+            background-color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-button i {
+            font-size: 1.2rem;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <a href="index.html" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+
+    <header>
+        <h1>Market Trending Crops</h1>
+        <p class="subtitle">Discover the most profitable agricultural products currently in demand. Click any crop to view detailed cultivation information.</p>
+    </header>
+    
+    <div class="crops-container">
+        <!-- Avocado -->
+        <div class="crop-card" onclick="showCropDetails('avocado')">
+            <div class="crop-image" style="background-image: url('https://images.unsplash.com/photo-1603048719537-93e55a8f030f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+                <span class="crop-tag">+24% Demand</span>
+                <h2 class="crop-name">Avocado</h2>
+            </div>
+        </div>
+        
+        <!-- Quinoa -->
+        <div class="crop-card" onclick="showCropDetails('quinoa')">
+            <div class="crop-image" style="background-image: url('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+                <span class="crop-tag">+32% Demand</span>
+                <h2 class="crop-name">Quinoa</h2>
+            </div>
+        </div>
+        
+        <!-- Dragon Fruit -->
+        <div class="crop-card" onclick="showCropDetails('dragon-fruit')">
+            <div class="crop-image" style="background-image: url('https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+                <span class="crop-tag">+45% Demand</span>
+                <h2 class="crop-name">Dragon Fruit</h2>
+            </div>
+        </div>
+        
+        <!-- Turmeric -->
+        <div class="crop-card" onclick="showCropDetails('turmeric')">
+            <div class="crop-image" style="background-image: url('https://images.unsplash.com/photo-1581012480200-e0c59e61ac04?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+                <span class="crop-tag">+18% Demand</span>
+                <h2 class="crop-name">Turmeric</h2>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <h3>AgriVision Market Trends</h3>
+            <p>Providing farmers with up-to-date information on the most profitable crops. Data updated weekly from global agricultural market reports.</p>
+        </div>
+    </footer>
+
+    <!-- Modal for crop details -->
+    <div id="cropModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalCropName">Crop Name</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>Crop Budget (per acre)</h3>
+                    <div class="budget-details" id="modalCropBudget">
+                        <!-- Budget details will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Cultivation Practices</h3>
+                    <ul id="modalCropPractices">
+                        <!-- Practices will be inserted here by JavaScript -->
+                    </ul>
+                </div>
+                <div class="modal-section">
+                    <h3>Visual Guide</h3>
+                    <div class="image-gallery" id="modalCropGallery">
+                        <!-- Images will be inserted here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Crop data
+        const cropsData = {
+            'avocado': {
+                name: 'Avocado',
+                budget: [
+                    { item: 'Land Preparation', cost: '₹15,000 - ₹20,000' },
+                    { item: 'Saplings (100 plants)', cost: '₹30,000 - ₹40,000' },
+                    { item: 'Fertilizers & Nutrients', cost: '₹25,000 - ₹35,000/year' },
+                    { item: 'Irrigation', cost: '₹20,000 - ₹30,000/year' },
+                    { item: 'Labor', cost: '₹15,000 - ₹25,000/year' },
+                    { item: 'Miscellaneous', cost: '₹15,000 - ₹20,000/year' }
+                ],
+                practices: [
+                    'Requires well-drained soil with pH 6-6.5',
+                    'Plant spacing of 6-8 meters between trees',
+                    'Needs regular irrigation but sensitive to waterlogging',
+                    'Annual pruning to maintain tree height and shape',
+                    'Fertilize with nitrogen, phosphorus, and potassium in balanced proportions',
+                    'Harvest when fruits reach maturity (usually 6-8 months after flowering)'
+                ],
+                images: [
+                    'https://images.unsplash.com/photo-1603048719537-93e55a8f030f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    'https://images.unsplash.com/photo-1603048719537-93e55a8f030f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    'https://images.unsplash.com/photo-1603048719537-93e55a8f030f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80'
+                ]
+            },
+            'quinoa': {
+                name: 'Quinoa',
+                budget: [
+                    { item: 'Land Preparation', cost: '₹8,000 - ₹12,000' },
+                    { item: 'Seeds (2-3 kg)', cost: '₹4,000 - ₹6,000' },
+                    { item: 'Fertilizers', cost: '₹12,000 - ₹18,000' },
+                    { item: 'Irrigation', cost: '₹15,000 - ₹20,000' },
+                    { item: 'Labor', cost: '₹20,000 - ₹25,000' },
+                    { item: 'Harvesting & Processing', cost: '₹16,000 - ₹22,000' }
+                ],
+                practices: [
+                    'Grows best in well-drained sandy loam soils',
+                    'Sow seeds directly in rows with 30-45 cm spacing',
+                    'Requires minimal water compared to other grains',
+                    'Weed control is crucial in early growth stages',
+                    'Harvest when plants turn yellow and seeds are hard',
+                    'Processing involves removing saponin coating from seeds'
+                ],
+                images: [
+                    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80'
+                ]
+            },
+            'dragon-fruit': {
+                name: 'Dragon Fruit',
+                budget: [
+                    { item: 'Land Preparation', cost: '₹20,000 - ₹30,000' },
+                    { item: 'Cuttings (600 plants)', cost: '₹60,000 - ₹80,000' },
+                    { item: 'Support Structure', cost: '₹1,00,000 - ₹1,20,000' },
+                    { item: 'Fertilizers', cost: '₹30,000 - ₹40,000/year' },
+                    { item: 'Irrigation', cost: '₹25,000 - ₹35,000/year' },
+                    { item: 'Labor', cost: '₹40,000 - ₹50,000/year' }
+                ],
+                practices: [
+                    'Requires well-drained soil with organic matter',
+                    'Needs strong support structures for climbing',
+                    'Regular pruning to maintain plant shape and productivity',
+                    'Night-blooming flowers require hand pollination for better yield',
+                    'Fruit develops in about 30-40 days after flowering',
+                    'Harvest when color changes from green to red/pink'
+                ],
+                images: [
+                    'https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    'https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    'https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80'
+                ]
+            },
+            'turmeric': {
+                name: 'Turmeric',
+                budget: [
+                    { item: 'Land Preparation', cost: '₹10,000 - ₹15,000' },
+                    { item: 'Seed Rhizomes (2000 kg)', cost: '₹40,000 - ₹50,000' },
+                    { item: 'Fertilizers', cost: '₹15,000 - ₹20,000' },
+                    { item: 'Irrigation', cost: '₹12,000 - ₹18,000' },
+                    { item: 'Labor', cost: '₹20,000 - ₹25,000' },
+                    { item: 'Processing', cost: '₹15,000 - ₹20,000' }
+                ],
+                practices: [
+                    'Plant rhizomes in well-prepared beds with organic matter',
+                    'Requires consistent moisture but not waterlogging',
+                    'Weed control is essential in early growth stages',
+                    'Harvest after 8-9 months when leaves turn yellow',
+                    'Curing process involves boiling and drying rhizomes',
+                    'Store in cool, dry place to maintain quality'
+                ],
+                images: [
+                    'https://images.unsplash.com/photo-1581012480200-e0c59e61ac04?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    'https://images.unsplash.com/photo-1581012480200-e0c59e61ac04?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    'https://images.unsplash.com/photo-1581012480200-e0c59e61ac04?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80'
+                ]
+            }
+        };
+
+        // Show crop details in modal
+        function showCropDetails(cropId) {
+            const crop = cropsData[cropId];
+            const modal = document.getElementById('cropModal');
+            
+            // Set crop name
+            document.getElementById('modalCropName').textContent = crop.name;
+            
+            // Set budget details
+            const budgetContainer = document.getElementById('modalCropBudget');
+            budgetContainer.innerHTML = '';
+            
+            crop.budget.forEach(item => {
+                const budgetItem = document.createElement('div');
+                budgetItem.className = 'budget-item';
+                budgetItem.innerHTML = `<span>${item.item}:</span> <span>${item.cost}</span>`;
+                budgetContainer.appendChild(budgetItem);
+            });
+            
+            // Add total
+            const total = document.createElement('div');
+            total.className = 'budget-item budget-total';
+            total.innerHTML = `<span>Total Estimated Budget:</span> <span>₹${crop.budget.reduce((sum, item) => {
+                const min = parseInt(item.cost.match(/\d+/g)[0].replace(/,/g, ''));
+                return sum + min;
+            }, 0).toLocaleString('en-IN')} - ₹${crop.budget.reduce((sum, item) => {
+                const nums = item.cost.match(/\d+/g);
+                const max = parseInt(nums[nums.length-1].replace(/,/g, ''));
+                return sum + max;
+            }, 0).toLocaleString('en-IN')}</span>`;
+            budgetContainer.appendChild(total);
+            
+            // Set cultivation practices
+            const practicesContainer = document.getElementById('modalCropPractices');
+            practicesContainer.innerHTML = '';
+            
+            crop.practices.forEach(practice => {
+                const li = document.createElement('li');
+                li.textContent = practice;
+                practicesContainer.appendChild(li);
+            });
+            
+            // Set images
+            const galleryContainer = document.getElementById('modalCropGallery');
+            galleryContainer.innerHTML = '';
+            
+            crop.images.forEach(imageUrl => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-image';
+                galleryItem.innerHTML = `<img src="${imageUrl}" alt="${crop.name} cultivation">`;
+                galleryContainer.appendChild(galleryItem);
+            });
+            
+            // Show modal
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('cropModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('cropModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
