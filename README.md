@@ -1,4 +1,3 @@
-# Smart-Agriculture
 # 🌱 Smart Agriculture System
 
 An AI + IoT based Smart Agriculture System designed to monitor crop health, environmental conditions, and automate decision-making for better farming productivity.
@@ -18,10 +17,9 @@ It uses Machine Learning and Computer Vision to provide insights and alerts to f
 - Data Logging & Analysis
 
 ## 🛠️ Tech Stack
-**Languages:** Python  
-**Frameworks:** Flask  
+**Languages:** Python ,JS
+**Frameworks:** Flask , HTML , CSS
 **Libraries:** OpenCV, NumPy, Pandas, Scikit-learn  
 **Hardware:** Arduino / Sensors / IoT Modules  
 **Tools:** VS Code, Jupyter Notebook
 
-## 📂 Project Structure
