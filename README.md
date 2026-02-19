@@ -5,11 +5,9 @@ An AI + IoT based Smart Agriculture System designed to monitor crop health, envi
 ## 📌 Overview
 The Smart Agriculture System collects real-time data from sensors and cameras to analyze crop conditions, soil moisture, temperature, and humidity.  
 It uses Machine Learning and Computer Vision to provide insights and alerts to farmers.
-
+Code:https://github.com/Viresh-tarapur/Smart-Agriculture
 ## 🎥 Project Demo
 (The response is slow because I am using the free API)
-Code:https://github.com/Viresh-tarapur/Smart-Agriculture
-
 
 https://github.com/user-attachments/assets/03699810-b303-4141-921a-01f60158ad3b
 
