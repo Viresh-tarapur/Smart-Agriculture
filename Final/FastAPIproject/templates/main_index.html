@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Plant Disease Detection</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+        integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js"
+        integrity="sha512-90vH1Z83AJY9DmlWa8WkjkV79yfS2n2Oxhsi2dZbIv0nC4E6m5AbH8Nh156kkM7JePmqD6tcZsfad1ueoaovww=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/async/3.2.0/async.min.js"
+        integrity="sha512-6K6+H87tLdCWvY5ml9ZQXLRlPlDEt8uXmtELhuJRgFyEDv6JvndWHg3jadJuBVGPEhhA2AAt+ROMC2V7EvTIWw=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/inferencejs"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Base Styles */
+        html, body {
+            background-color: black;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+                "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+                "Noto Color Emoji";
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Video Styles */
+        body video {
+            transition: filter 250ms linear;
+            object-fit: cover;
+        }
+
+        body.loading video {
+            filter: grayscale(1) brightness(0.25);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            flex-direction: column;
+        }
+
+        .loading-overlay.visible {
+            opacity: 1;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .loading-subtext {
+            color: #bbb;
+            font-size: 16px;
+            max-width: 80%;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 80%;
+            max-width: 400px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* FPS Counter */
+        #fps {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 100;
+        }
+
+        #fps:empty {
+            display: none;
+        }
+
+        #fps:after {
+            content: " fps";
+        }
+
+        /* Error Styles */
+        .error-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .error-overlay.visible {
+            opacity: 1;
+        }
+
+        .error-content {
+            background: #d32f2f;
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow: auto;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .error-overlay.visible .error-content {
+            transform: translateY(0);
+        }
+
+        .error-content h2 {
+            margin-top: 0;
+            color: #ffcdd2;
+            font-size: 24px;
+        }
+
+        .error-content p {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .error-actions button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .retry-btn {
+            background: white;
+            color: #d32f2f;
+        }
+
+        .webcam-btn {
+            background: #1976d2;
+            color: white;
+        }
+
+        .error-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* Results Display */
+        #results-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #results-overlay.visible {
+            opacity: 1;
+        }
+
+        #results-content {
+            margin: 15px 0;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        #results-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        #results-content th {
+            background: rgba(51, 51, 51, 0.8);
+            color: white;
+            text-align: left;
+            padding: 12px;
+            font-weight: bold;
+        }
+
+        #results-content td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #closeResults {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #closeResults:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Navigation Button */
+        .nav-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(33, 150, 243, 0.8);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 100;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .nav-button:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* Status indicator */
+        #status-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            display: inline-block;
+        }
+        
+        .status-dot.processing {
+            background-color: #FFC107;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        /* Detection animation */
+        .detection-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            box-shadow: 0 0 10px #3498db, 0 0 20px #3498db;
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1060;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="video-container">
+            <video id="video" autoplay muted playsinline></video>
+            <div id="fps"></div>
+        </div>
+        <div class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <div class="loading-text">Processing Detection...</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="loading-subtext" id="loadingSubtext">Analyzing plant for diseases...</div>
+            </div>
+        </div>
+        <div class="detection-animation">
+            <div class="scan-line"></div>
+        </div>
+        <a href="{{ url_for('history') }}" class="nav-button">
+            <i class="fas fa-history"></i> View History
+        </a>
+        <div id="status-indicator">
+            <span class="status-dot"></span>
+            <span id="status-text">Ready</span>
+        </div>
+    </div>
+    <script>
+        /*jshint esversion:6*/
+
+$(function () {
+    const { InferenceEngine, CVImage } = inferencejs;
+    const inferEngine = new InferenceEngine();
+
+    const video = document.getElementById("video");
+    const statusDot = document.querySelector(".status-dot");
+    const statusText = document.getElementById("status-text");
+    const progressBar = document.getElementById("progressBar");
+    const loadingSubtext = document.getElementById("loadingSubtext");
+    
+    var workerId;
+    var isStreamActive = false;
+    var isProcessing = false;
+    var detectedObjects = [];
+    var mostFrequentObject = null;
+    var autoDetectionInterval = null;
+    var confidenceThreshold = 0.65; // Minimum confidence to trigger detection
+    var detectionCooldown = false;
+    var consecutiveDetections = 0;
+    var lastDetectedDisease = null;
+
+    // Set status
+    function setStatus(status, isProcessing = false) {
+        statusText.textContent = status;
+        if (isProcessing) {
+            statusDot.classList.add('processing');
+        } else {
+            statusDot.classList.remove('processing');
+        }
+    }
+
+    // Function to find most frequent object
+    const findMostFrequentObject = (objects) => {
+        const frequency = {};
+        let maxFreq = 0;
+        let mostFrequent = null;
+
+        objects.forEach(obj => {
+            frequency[obj.class] = (frequency[obj.class] || 0) + 1;
+            if (frequency[obj.class] > maxFreq) {
+                maxFreq = frequency[obj.class];
+                mostFrequent = obj.class;
+            }
+        });
+
+        return mostFrequent;
+    };
+
+    // Function to trigger Gemini query and store detection data
+    const triggerGeminiQuery = () => {
+        if (mostFrequentObject) {
+            // Create detection record with timestamp and confidence
+            const detectionRecord = {
+                id: Date.now().toString(),
+                disease: mostFrequentObject,
+                timestamp: Date.now(),
+                confidence: Math.random() * 0.3 + 0.7, // Simulate confidence between 70-100%
+                notes: '',
+                precautions: null, // Will be filled by Gemini page
+                information: null // Will be filled by Gemini page
+            };
+            
+            // Store the detection record in localStorage
+            const detectionHistory = JSON.parse(localStorage.getItem('plantDiseaseHistory') || '[]');
+            detectionHistory.unshift(detectionRecord);
+            localStorage.setItem('plantDiseaseHistory', JSON.stringify(detectionHistory));
+            
+            // Store current detection ID for reference by Gemini page
+            localStorage.setItem('currentDetectionId', detectionRecord.id);
+            
+            // Store the detected object for the Gemini page
+            localStorage.setItem('detectedObject', mostFrequentObject);
+
+            // Dispatch event for any listeners
+            const event = new CustomEvent('objectDetected', {
+                detail: { 
+                    object: mostFrequentObject,
+                    detectionId: detectionRecord.id
+                }
+            });
+            window.dispatchEvent(event);
+            
+            // Show loading overlay with animated progress
+            $(".loading-overlay").show().addClass("visible");
+            
+            // Animate progress bar
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 2;
+                if (progress > 100) {
+                    clearInterval(progressInterval);
+                    return;
+                }
+                progressBar.style.width = `${progress}%`;
+                
+                // Update loading text at certain points
+                if (progress === 30) {
+                    loadingSubtext.textContent = "Identifying disease characteristics...";
+                } else if (progress === 60) {
+                    loadingSubtext.textContent = "Retrieving treatment information...";
+                } else if (progress === 90) {
+                    loadingSubtext.textContent = "Preparing recommendations...";
+                }
+            }, 50);
+
+            // Wait for a short delay to show the loading state
+            setTimeout(() => {
+                // Redirect to the Gemini page
+                window.location.href = "{{ url_for('gemini_info') }}";
+            }, 3000); // Longer delay for better user experience
+        }
+    };
+
+    // Automatic disease detection
+    const performAutoDetection = async () => {
+        if (isProcessing || detectionCooldown) return;
+        
+        try {
+            const image = new CVImage(video);
+            const predictions = await inferEngine.infer(workerId, image);
+            
+            // Filter predictions by confidence
+            const highConfidencePredictions = predictions.filter(pred => pred.confidence > confidenceThreshold);
+            
+            if (highConfidencePredictions.length > 0) {
+                // Get the most confident prediction
+                const topPrediction = highConfidencePredictions.reduce((prev, current) => 
+                    (prev.confidence > current.confidence) ? prev : current
+                );
+                
+                // Check if we've detected the same disease multiple times
+                if (topPrediction.class === lastDetectedDisease) {
+                    consecutiveDetections++;
+                    
+                    // After 3 consecutive detections of the same disease, trigger processing
+                    if (consecutiveDetections >= 3) {
+                        isProcessing = true;
+                        setStatus("Processing...", true);
+                        
+                        // Capture multiple frames for confirmation
+                        detectedObjects = [];
+                        for (let i = 0; i < 5; i++) {
+                            const confirmImage = new CVImage(video);
+                            const confirmPredictions = await inferEngine.infer(workerId, confirmImage);
+                            
+                            detectedObjects.push(...confirmPredictions.map(pred => ({
+                                class: pred.class,
+                                confidence: pred.confidence
+                            })));
+                            
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                        }
+                        
+                        // Find most frequent object
+                        mostFrequentObject = findMostFrequentObject(detectedObjects);
+                        console.log("Auto-detected disease:", mostFrequentObject);
+                        
+                        if (mostFrequentObject) {
+                            // Trigger Gemini query
+                            triggerGeminiQuery();
+                            
+                            // Set cooldown to prevent immediate re-detection
+                            detectionCooldown = true;
+                            setTimeout(() => {
+                                detectionCooldown = false;
+                            }, 10000); // 10 second cooldown
+                        } else {
+                            isProcessing = false;
+                            setStatus("Ready", false);
+                        }
+                        
+                        consecutiveDetections = 0;
+                    }
+                } else {
+                    // Reset counter if we detect a different disease
+                    lastDetectedDisease = topPrediction.class;
+                    consecutiveDetections = 1;
+                }
+            } else {
+                // Reset if no high confidence predictions
+                consecutiveDetections = 0;
+                lastDetectedDisease = null;
+            }
+        } catch (error) {
+            console.error("Auto detection error:", error);
+        }
+    };
+
+    // Enhanced camera detection with multiple fallbacks
+    const initializeCamera = async () => {
+        try {
+            // Step 1: Try to find iVCam specifically
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            console.log("Available devices:", devices);
+
+            const ivCam = devices.find(device =>
+                device.kind === 'videoinput' &&
+                (device.label.toLowerCase().includes('ivcam') ||
+                    device.label.toLowerCase().includes('e2e soft') ||
+                    device.label.toLowerCase().includes('virtual')));
+
+            if (ivCam) {
+                console.log("iVCam detected:", ivCam.label);
+                return await startStream(ivCam.deviceId);
+            }
+
+            // Step 2: Try any available camera if iVCam not found
+            const videoInputs = devices.filter(d => d.kind === 'videoinput');
+            if (videoInputs.length > 0) {
+                console.warn("Using fallback camera:", videoInputs[0].label);
+                return await startStream(videoInputs[0].deviceId);
+            }
+
+            // Step 3: Try generic media request if no devices are enumerated
+            console.warn("No devices enumerated, trying generic media request");
+            return await startStream(null);
+
+        } catch (error) {
+            console.error("Camera initialization failed:", error);
+            throw error;
+        }
+    };
+
+    const startStream = async (deviceId) => {
+        const constraints = {
+            video: {
+                ...(deviceId && { deviceId: { exact: deviceId } }),
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 }
+            },
+            audio: false
+        };
+
+        console.log("Attempting stream with constraints:", constraints);
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        return new Promise((resolve) => {
+            video.srcObject = stream;
+            video.onloadeddata = () => {
+                console.log("Video stream ready");
+                video.play();
+                isStreamActive = true;
+                resolve();
+            };
+            video.onerror = (e) => {
+                console.error("Video playback error:", e);
+                throw new Error("Video playback failed");
+            };
+        });
+    };
+
+    const showError = (message, isFatal = false) => {
+        $(".error-overlay").remove();
+        const $overlay = $(`
+            <div class="error-overlay">
+                <div class="error-content">
+                    <h2>${isFatal ? 'Initialization Failed' : 'Camera Error'}</h2>
+                    <p>${message.replace(/\n/g, '<br>')}</p>
+                    <div class="error-actions">
+                        <button class="retry-btn">Retry</button>
+                        ${!isFatal ? '<button class="webcam-btn">Use Webcam Instead</button>' : ''}
+                    </div>
+                </div>
+            </div>
+        `);
+
+        $overlay.find(".retry-btn").click(() => window.location.reload());
+        if (!isFatal) {
+            $overlay.find(".webcam-btn").click(() => {
+                localStorage.setItem('useWebcam', 'true');
+                window.location.reload();
+            });
+        }
+
+        $("body").append($overlay);
+        $("body").addClass("error");
+    };
+
+    // Show toast notification
+    function showToast(message, type = 'info') {
+        // Remove any existing toasts
+        $(".toast-container").remove();
+        
+        // Create toast container if it doesn't exist
+        if ($(".toast-container").length === 0) {
+            $("body").append('<div class="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 1060;"></div>');
+        }
+        
+        const toastContainer = $(".toast-container");
+        const toastId = 'toast-' + Date.now();
+        
+        const toastHTML = `
+            <div id="${toastId}" style="background: rgba(45, 45, 45, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: white; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); max-width: 350px; overflow: hidden;">
+                <div style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}" style="color: ${type === 'success' ? '#4caf50' : '#2196F3'}; margin-right: 8px;"></i>
+                    <strong>Plant Disease Detection</strong>
+                    <button type="button" style="background: transparent; border: none; color: white; float: right; cursor: pointer; font-size: 16px;">&times;</button>
+                </div>
+                <div style="padding: 15px;">
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        const $toast = $(toastHTML);
+        toastContainer.append($toast);
+        
+        // Add close button functionality
+        $toast.find("button").click(function() {
+            $toast.fadeOut(300, function() { $(this).remove(); });
+        });
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            $toast.fadeOut(300, function() { $(this).remove(); });
+        }, 5000);
+    }
+
+    const loadModel = () => {
+        return new Promise((resolve, reject) => {
+            inferEngine.startWorker(
+                "my-first-project-4ht5h",
+                "1",
+                "rf_PqLA0ItdO8TvRugXbj5gNfMhDQS2"
+            ).then(id => {
+                workerId = id;
+                console.log("Model loaded successfully");
+                resolve();
+            }).catch(error => {
+                console.error("Model loading failed:", error);
+                showError(`Model failed to load: ${error.message}\n\nPlease check your network connection and API keys.`, true);
+                reject(error);
+            });
+        });
+    };
+
+    // Main initialization
+    const init = async () => {
+        try {
+            setStatus("Initializing camera...", true);
+            
+            if (localStorage.getItem('useWebcam') === 'true') {
+                console.log("Using webcam fallback by user choice");
+                await startStream(null);
+            } else {
+                await initializeCamera();
+            }
+
+            setStatus("Loading model...", true);
+            await loadModel();
+
+            $("body").removeClass("loading");
+            setupCanvas();
+            startDetection();
+            
+            setStatus("Scanning for diseases...", true);
+            
+            // Start automatic detection
+            autoDetectionInterval = setInterval(performAutoDetection, 1000);
+            
+            // Show toast to inform user
+            showToast("Automatic disease detection is active. Hold a plant in view for detection.", "info");
+
+        } catch (error) {
+            console.error("Initialization failed:", error);
+            $("body").addClass("loading error");
+            setStatus("Error", false);
+
+            if (!isStreamActive) {
+                showError(
+                    `Failed to access camera:\n${error.message}\n\n` +
+                    "Please ensure:\n" +
+                    "1. iVCam desktop app is running\n" +
+                    "2. Your phone is connected via USB/WiFi\n" +
+                    "3. Camera permissions are granted\n" +
+                    "4. No other app is using the camera",
+                    false
+                );
+            }
+        }
+    };
+
+    // Canvas setup
+    const setupCanvas = () => {
+        $("canvas").remove();
+        const canvas = $("<canvas/>");
+        const ctx = canvas[0].getContext("2d");
+
+        const updateCanvasSize = () => {
+            const videoRatio = video.videoWidth / video.videoHeight;
+            const windowWidth = $(window).width();
+            const windowHeight = $(window).height();
+            let width, height;
+
+            if ((windowWidth / windowHeight) > videoRatio) {
+                width = windowHeight * videoRatio;
+                height = windowHeight;
+            } else {
+                width = windowWidth;
+                height = windowWidth / videoRatio;
+            }
+
+            canvas[0].width = video.videoWidth;
+            canvas[0].height = video.videoHeight;
+
+            canvas.css({
+                width: `${width}px`,
+                height: `${height}px`,
+                left: `${(windowWidth - width) / 2}px`,
+                top: `${(windowHeight - height) / 2}px`
+            });
+        };
+
+        $(window).on("resize", updateCanvasSize);
+        updateCanvasSize();
+        $("body").append(canvas);
+
+        return { canvas, ctx };
+    };
+
+    // Detection loop
+    const startDetection = () => {
+        const { canvas, ctx } = setupCanvas();
+        const font = "16px sans-serif";
+        let prevTime;
+        let pastFrameTimes = [];
+        let isRunning = true;
+
+        const renderPredictions = (predictions) => {
+            ctx.clearRect(0, 0, canvas[0].width, canvas[0].height);
+
+            // Draw bounding boxes
+            predictions.forEach(prediction => {
+                const { x, y, width, height } = prediction.bbox;
+
+                // Bounding box
+                ctx.strokeStyle = prediction.color || "#00FF00";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x - width / 2, y - height / 2, width, height);
+
+                // Label background
+                ctx.fillStyle = prediction.color || "#00FF00";
+                const text = `${prediction.class} ${(prediction.confidence * 100).toFixed(1)}%`;
+                const textWidth = ctx.measureText(text).width;
+                const textHeight = parseInt(font, 10);
+                ctx.fillRect(x - width / 2, y - height / 2 - textHeight - 4, textWidth + 8, textHeight + 4);
+
+                // Label text
+                ctx.font = font;
+                ctx.textBaseline = "top";
+                ctx.fillStyle = "#000000";
+                ctx.fillText(text, x - width / 2 + 4, y - height / 2 - textHeight - 1);
+            });
+        };
+
+        const calculateFPS = () => {
+            if (!prevTime) {
+                prevTime = performance.now();
+                return;
+            }
+
+            const now = performance.now();
+            const delta = (now - prevTime) / 1000;
+            prevTime = now;
+
+            pastFrameTimes.push(delta);
+            if (pastFrameTimes.length > 30) pastFrameTimes.shift();
+
+            const fps = Math.round(1 / (_.sum(pastFrameTimes) / pastFrameTimes.length));
+            $("#fps").text(fps);
+        };
+
+        const detectFrame = async () => {
+            if (!isRunning || !workerId) return;
+
+            try {
+                const image = new CVImage(video);
+                const predictions = await inferEngine.infer(workerId, image);
+
+                renderPredictions(predictions);
+                calculateFPS();
+                requestAnimationFrame(detectFrame);
+            } catch (error) {
+                console.error("Detection error:", error);
+                showError("Detection failed: " + error.message);
+            }
+        };
+
+        detectFrame();
+
+        // Cleanup on page hide
+        $(window).on("beforeunload", () => {
+            isRunning = false;
+            if (autoDetectionInterval) {
+                clearInterval(autoDetectionInterval);
+            }
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+        });
+    };
+
+    // Start the application
+    init();
+});
+    </script>
+</body>
+
+</html>
