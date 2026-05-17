@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Festival Recommendations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            color: #fff;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #4a6741;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-button:hover {
+            background-color: #3d5635;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            margin-top: 60px;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            color: #f1c40f;
+        }
+
+        .month-badge {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .festivals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .festival-card {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            color: #333;
+            transition: transform 0.3s ease;
+        }
+
+        .festival-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .festival-header {
+            background-color: #4a6741;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .festival-body {
+            padding: 25px;
+        }
+
+        .category {
+            margin-bottom: 20px;
+        }
+
+        .category:last-child {
+            margin-bottom: 0;
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .items-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .item-tag {
+            background-color: #f0f4eb;
+            color: #3d5635;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border: 1px solid #c8dcb9;
+        }
+
+        .crop-tag {
+            background-color: #f0f4eb;
+            color: #3d5635;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border: 1px solid #c8dcb9;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .crop-tag:hover {
+            background-color: #d4e8c2;
+            transform: scale(1.05);
+        }
+
+        /* Modal overlay */
+        .crop-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        .crop-modal-overlay.active {
+            display: flex;
+        }
+
+        .crop-modal {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+            animation: modalIn 0.25s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+
+        .crop-modal h3 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .crop-modal-section {
+            margin-bottom: 16px;
+        }
+
+        .crop-modal-section h4 {
+            font-size: 1rem;
+            color: #4a6741;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .crop-modal-section p {
+            color: #555;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .crop-modal-close {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+            line-height: 1;
+        }
+        .crop-modal-close:hover { color: #333; }
+
+        .empty-message {
+            color: #7f8c8d;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 80px;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <a href="{{ url_for('predictions') }}" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="container">
+        <div class="header-section">
+            <h1><i class="fas fa-holly-berry"></i> Festival Recommendations</h1>
+            <div class="month-badge" style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <form method="GET" action="{{ url_for('festival') }}" style="display: inline-block; margin: 0;">
+                    <i class="far fa-calendar-alt"></i> Starting Month: 
+                    <select name="month" onchange="this.form.submit()" style="background: transparent; color: white; border: none; border-bottom: 1px solid white; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none; margin-left: 5px; padding-bottom: 2px;">
+                        <option style="color: black;" value="January" {% if months[0] == 'January' %}selected{% endif %}>January</option>
+                        <option style="color: black;" value="February" {% if months[0] == 'February' %}selected{% endif %}>February</option>
+                        <option style="color: black;" value="March" {% if months[0] == 'March' %}selected{% endif %}>March</option>
+                        <option style="color: black;" value="April" {% if months[0] == 'April' %}selected{% endif %}>April</option>
+                        <option style="color: black;" value="May" {% if months[0] == 'May' %}selected{% endif %}>May</option>
+                        <option style="color: black;" value="June" {% if months[0] == 'June' %}selected{% endif %}>June</option>
+                        <option style="color: black;" value="July" {% if months[0] == 'July' %}selected{% endif %}>July</option>
+                        <option style="color: black;" value="August" {% if months[0] == 'August' %}selected{% endif %}>August</option>
+                        <option style="color: black;" value="September" {% if months[0] == 'September' %}selected{% endif %}>September</option>
+                        <option style="color: black;" value="October" {% if months[0] == 'October' %}selected{% endif %}>October</option>
+                        <option style="color: black;" value="November" {% if months[0] == 'November' %}selected{% endif %}>November</option>
+                        <option style="color: black;" value="December" {% if months[0] == 'December' %}selected{% endif %}>December</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        {% for month in months %}
+        <div style="margin-bottom: 50px;">
+            <h2 style="color: #f1c40f; border-bottom: 2px solid #4a6741; padding-bottom: 10px; margin-bottom: 20px; text-align: left;">
+                <i class="fas fa-calendar-day"></i> {{ month }}
+            </h2>
+            
+            {% set month_festivals = festival_data.get(month) %}
+            
+            {% if month_festivals %}
+                <div class="festivals-grid">
+                    {% for festival, details in month_festivals.items() %}
+                    <div class="festival-card">
+                        <div class="festival-header">
+                            <i class="fas fa-star"></i> {{ festival }}
+                        </div>
+                        <div class="festival-body">
+                            {% if not details.crops and not details.flowers and not details.leaves %}
+                                <div class="empty-message" style="text-align: center; padding: 10px 0;">No specific recommendations for this festival yet.</div>
+                            {% else %}
+                                {% if details.crops %}
+                                <div class="category">
+                                    <div class="category-title">
+                                        <i class="fas fa-seedling" style="color: #27ae60;"></i> Crops
+                                    </div>
+                                    <ul class="items-list">
+                                        {% for crop in details.crops %}
+                                        {% set crop_key = crop | upper %}
+                                        <li class="crop-tag" onclick="showCropInfo('{{ crop }}', '{{ crop_info.get(crop_key, {}).get('how_to_grow', '') | replace("'", "\\'") }}', '{{ crop_info.get(crop_key, {}).get('sowing_time', '') | replace("'", "\\'") }}')">
+                                            {{ crop }} <i class="fas fa-info-circle" style="font-size:0.75rem; opacity:0.6; margin-left:4px;"></i>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+
+                                {% if details.flowers %}
+                                <div class="category">
+                                    <div class="category-title">
+                                        <i class="fas fa-spa" style="color: #e84393;"></i> Flowers
+                                    </div>
+                                    <ul class="items-list">
+                                        {% for flower in details.flowers %}
+                                        <li class="item-tag">{{ flower }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+
+                                {% if details.leaves %}
+                                <div class="category">
+                                    <div class="category-title">
+                                        <i class="fas fa-leaf" style="color: #00b894;"></i> Leaves
+                                    </div>
+                                    <ul class="items-list">
+                                        {% for leaf in details.leaves %}
+                                        <li class="item-tag">{{ leaf }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <i class="fas fa-info-circle fa-2x" style="margin-bottom: 15px;"></i><br>
+                    No major festival data available for {{ month }}.
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Crop Info Modal -->
+    <div class="crop-modal-overlay" id="cropModalOverlay" onclick="closeCropModal(event)">
+        <div class="crop-modal">
+            <button class="crop-modal-close" onclick="document.getElementById('cropModalOverlay').classList.remove('active')">&times;</button>
+            <h3><i class="fas fa-seedling" style="color:#27ae60;"></i> <span id="modalCropName"></span></h3>
+            <div class="crop-modal-section">
+                <h4><i class="fas fa-book-open"></i> How to Grow</h4>
+                <p id="modalHowToGrow">Loading...</p>
+            </div>
+            <div class="crop-modal-section">
+                <h4><i class="fas fa-calendar-check" style="color:#f39c12;"></i> Best Sowing Time</h4>
+                <p id="modalSowingTime">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showCropInfo(cropName, howToGrow, sowingTime) {
+            document.getElementById('modalCropName').textContent = cropName;
+            document.getElementById('modalHowToGrow').textContent = howToGrow || 'Information not available.';
+            document.getElementById('modalSowingTime').textContent = sowingTime || 'Information not available.';
+            document.getElementById('cropModalOverlay').classList.add('active');
+        }
+
+        function closeCropModal(event) {
+            if (event.target === document.getElementById('cropModalOverlay')) {
+                document.getElementById('cropModalOverlay').classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

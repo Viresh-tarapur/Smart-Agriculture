@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+.venv*/
+venv/
+env/
+
+# Local environment/config
+.env
+.env.*
+!.env.example
+
+# Runtime data
+*.db
+*.sqlite
+*.sqlite3
+*.log
+server.out.log
+server.err.log
+
+# Build/cache/temp output
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+pip-build-tracker-*/
+pip-ephem-wheel-cache-*/
+pip-install-*/
+pip-target-*/
+tmp*/
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

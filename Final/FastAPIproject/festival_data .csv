@@ -1,0 +1,123 @@
+festival_data = {
+
+    "January": {
+        "Makar Sankranti": {
+            "crops": ["Sugarcane", "Sesame", "Groundnut"],
+            "flowers": ["Marigold"],
+            "leaves": []
+        },
+        "Pongal": {
+            "crops": ["Rice", "Sugarcane", "Turmeric"],
+            "flowers": ["Jasmine"],
+            "leaves": []
+        }
+    },
+
+    "February": {
+        "Maha Shivratri": {
+            "crops": ["Banana", "Coconut"],
+            "flowers": ["Datura", "Jasmine"],
+            "leaves": ["Bilva Leaves"]
+        }
+    },
+
+    "March": {
+        "Ugadi": {
+            "crops": ["Mango", "Neem", "Rice"],
+            "flowers": ["Jasmine", "Marigold"],
+            "leaves": ["Neem Leaves", "Mango Leaves"]
+        },
+        "Holi": {
+            "crops": ["Wheat", "Maize"],
+            "flowers": ["Palash"],
+            "leaves": []
+        }
+    },
+
+    "April": {
+        "Ramzan": {
+            "crops": ["Dates", "Wheat", "Rice"],
+            "flowers": [],
+            "leaves": []
+        }
+    },
+
+    "May": {
+        "Eid": {
+            "crops": ["Rice", "Wheat", "Spices"],
+            "flowers": ["Rose"],
+            "leaves": []
+        }
+    },
+
+    "June": {
+        "No Major Festival": {
+            "crops": ["Paddy", "Maize", "Ragi"],
+            "flowers": ["Jasmine"],
+            "leaves": []
+        }
+    },
+
+    "July": {
+        "Ashadha Month": {
+            "crops": ["Ragi", "Maize"],
+            "flowers": ["Jasmine"],
+            "leaves": []
+        }
+    },
+
+    "August": {
+        "Varalakshmi Vrata": {
+            "crops": ["Rice", "Coconut"],
+            "flowers": ["Jasmine", "Lotus"],
+            "leaves": ["Mango Leaves"]
+        },
+        "Raksha Bandhan": {
+            "crops": ["Sugarcane", "Wheat"],
+            "flowers": ["Rose"],
+            "leaves": []
+        },
+        "Krishna Janmashtami": {
+            "crops": ["Rice", "Coconut"],
+            "flowers": ["Tulsi", "Jasmine"],
+            "leaves": ["Tulsi Leaves"]
+        }
+    },
+
+    "September": {
+        "Ganesh Chaturthi": {
+            "crops": ["Rice", "Coconut"],
+            "flowers": ["Marigold", "Lotus"],
+            "leaves": ["Betel Leaves", "Durva Grass"]
+        }
+    },
+
+    "October": {
+        "Navratri": {
+            "crops": ["Ragi", "Rice"],
+            "flowers": ["Marigold", "Jasmine"],
+            "leaves": []
+        },
+        "Dussehra (Mysuru Dasara)": {
+            "crops": ["Rice", "Maize", "Sugarcane"],
+            "flowers": ["Marigold"],
+            "leaves": ["Banni Leaves"]
+        }
+    },
+
+    "November": {
+        "Diwali": {
+            "crops": ["Wheat", "Groundnut", "Sugarcane"],
+            "flowers": ["Marigold", "Rose"],
+            "leaves": ["Mango Leaves"]
+        }
+    },
+
+    "December": {
+        "Christmas": {
+            "crops": ["Wheat", "Spices"],
+            "flowers": ["Rose"],
+            "leaves": []
+        }
+    }
+}

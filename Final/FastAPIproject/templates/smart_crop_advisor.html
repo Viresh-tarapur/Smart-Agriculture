@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Crop Advisor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                        url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #4a6741;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #3d5635;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin-top: 80px;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #fff;
+            color: #333;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234a6741' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            cursor: pointer;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #4a6741;
+            box-shadow: 0 0 0 3px rgba(74,103,65,0.15);
+        }
+
+        select:disabled {
+            background-color: #f4f4f4;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        select option[value=""] {
+            color: #aaa;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #4a6741;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #3d5635;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .results h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .status-message {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            color: #666;
+            font-style: italic;
+        }
+
+        .crop-list {
+            list-style: none;
+        }
+
+        .crop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 5px solid #4a6741;
+        }
+
+        .crop-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .crop-value {
+            font-size: 1.1rem;
+            color: #4a6741;
+            font-weight: bold;
+        }
+        .crop-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .crop-market-info {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #555;
+            background: #fff;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #2c3e50;
+        }
+
+        .market-price {
+            font-weight: bold;
+            color: #d35400;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .sales-trend {
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <a href="{{ url_for('predictions') }}" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Crop Advisor
+    </a>
+    
+    <div class="container">
+        <h1><i class="fas fa-brain"></i> Smart Crop Advisor</h1>
+        
+        <form method="POST" action="{{ url_for('handle_smart_crop_advisor') }}">
+            <div class="form-group">
+                <label for="district"><i class="fas fa-map-marker-alt"></i> District</label>
+                <select id="district" name="district" required onchange="populateTaluks()">
+                    <option value="" disabled selected>-- Select District --</option>
+                    <option value="BAGALAKOTE" {% if district == 'BAGALAKOTE' %}selected{% endif %}>Bagalakote</option>
+                    <option value="BELAGAVI" {% if district == 'BELAGAVI' %}selected{% endif %}>Belagavi</option>
+                    <option value="BELLARY" {% if district == 'BELLARY' %}selected{% endif %}>Bellary</option>
+                    <option value="BENGALURU RURAL" {% if district == 'BENGALURU RURAL' %}selected{% endif %}>Bengaluru Rural</option>
+                    <option value="BENGALURU URBAN" {% if district == 'BENGALURU URBAN' %}selected{% endif %}>Bengaluru Urban</option>
+                    <option value="BIDAR" {% if district == 'BIDAR' %}selected{% endif %}>Bidar</option>
+                    <option value="CHAMARAJANAGARA" {% if district == 'CHAMARAJANAGARA' %}selected{% endif %}>Chamarajanagara</option>
+                    <option value="CHIKKABALLAPURA" {% if district == 'CHIKKABALLAPURA' %}selected{% endif %}>Chikkaballapura</option>
+                    <option value="CHIKKAMAGALURU" {% if district == 'CHIKKAMAGALURU' %}selected{% endif %}>Chikkamagaluru</option>
+                    <option value="CHITRADURGA" {% if district == 'CHITRADURGA' %}selected{% endif %}>Chitradurga</option>
+                    <option value="DAKSHINA KANNADA" {% if district == 'DAKSHINA KANNADA' %}selected{% endif %}>Dakshina Kannada</option>
+                    <option value="DAVANAGERE" {% if district == 'DAVANAGERE' %}selected{% endif %}>Davanagere</option>
+                    <option value="DHARWADA" {% if district == 'DHARWADA' %}selected{% endif %}>Dharwad</option>
+                    <option value="GADAG" {% if district == 'GADAG' %}selected{% endif %}>Gadag</option>
+                    <option value="HASSAN" {% if district == 'HASSAN' %}selected{% endif %}>Hassan</option>
+                    <option value="HAVERI" {% if district == 'HAVERI' %}selected{% endif %}>Haveri</option>
+                    <option value="KALABURAGI" {% if district == 'KALABURAGI' %}selected{% endif %}>Kalaburagi</option>
+                    <option value="KODAGU" {% if district == 'KODAGU' %}selected{% endif %}>Kodagu</option>
+                    <option value="KOLARA" {% if district == 'KOLARA' %}selected{% endif %}>Kolar</option>
+                    <option value="KOPPALA" {% if district == 'KOPPALA' %}selected{% endif %}>Koppala</option>
+                    <option value="MANDYA" {% if district == 'MANDYA' %}selected{% endif %}>Mandya</option>
+                    <option value="MYSURU" {% if district == 'MYSURU' %}selected{% endif %}>Mysuru</option>
+                    <option value="RAICHURU" {% if district == 'RAICHURU' %}selected{% endif %}>Raichur</option>
+                    <option value="RAMANAGARA" {% if district == 'RAMANAGARA' %}selected{% endif %}>Ramanagara</option>
+                    <option value="SHIVAMOGGA" {% if district == 'SHIVAMOGGA' %}selected{% endif %}>Shivamogga</option>
+                    <option value="TUMAKURU" {% if district == 'TUMAKURU' %}selected{% endif %}>Tumakuru</option>
+                    <option value="UDUPI" {% if district == 'UDUPI' %}selected{% endif %}>Udupi</option>
+                    <option value="UTTARA KANNADA" {% if district == 'UTTARA KANNADA' %}selected{% endif %}>Uttara Kannada</option>
+                    <option value="VIJAYAPURA" {% if district == 'VIJAYAPURA' %}selected{% endif %}>Vijayapura</option>
+                    <option value="YADAGIRI" {% if district == 'YADAGIRI' %}selected{% endif %}>Yadagiri</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="taluk"><i class="fas fa-map-pin"></i> Taluk</label>
+                <select id="taluk" name="taluk" required>
+                    <option value="" disabled selected>-- Select District First --</option>
+                </select>
+            </div>
+            
+            <button type="submit"><i class="fas fa-magic"></i> Get Recommendations</button>
+        </form>
+
+        <script>
+            const districtTaluks = {
+                "BAGALAKOTE": ["BADAMI","BAGALKOT","BILAGI","GULEDAGUDDA","HUNGUND","ILLKAL","JAMAKHANDI","MUDHOL","RABAKAVI BANAHATTI"],
+                "BELAGAVI": ["ATHANI","BAILHONGAL","BELGAUM","CHIKKODI","GOKAK","HUKKERI","KAGAVADA","KHANAPUR","KITTUR","MUDALAGI","NIPPANI","RAIBAG","RAMADURG","SAVADATTI"],
+                "BELLARY": ["BELLARY","HADAGLI","HAGARIBOMMANNAHALLI","HARAPANAHALLI","HOSPET","KAMPLI","KOTTURU","KUDLIGI","KURUGODU","SANDUR","SIRGUPPA"],
+                "BENGALURU RURAL": ["DEVANAHALLI","DODDABALLAPURA","HOSKOTE","NELAMANGALA"],
+                "BENGALURU URBAN": ["ANEKAL","BANGALORE NORTH","BANGALORE SOUTH","BANGALORE-EAST","YALAHANKA"],
+                "BIDAR": ["AURAD","BASAVAKALYAN","BHALKI","BIDAR","CHITAGUPPA","HULASURA","HUMNABAD","KAMALANAGAR"],
+                "CHAMARAJANAGARA": ["CHAMARAJANAGARA","GUNDLUPET","HANUR","KOLLEGALA","YALANDUR"],
+                "CHIKKABALLAPURA": ["BAGEPALLI","CHIKBALLAPUR","CHINTHAMANI","GAURIBIDANUR","GUDIBANDE","SIDLAGHATTA"],
+                "CHIKKAMAGALURU": ["AJJAMPURA","CHIKMAGALUR","KADUR","KOPPA","MUDIGERE","NARASIMHARAJAPURA","SRINGERI","TARIKERE"],
+                "CHITRADURGA": ["CHALLAKERE","CHITRADURGA","HIIRIYUR","HOLALKERE","HOSDURGA","MOLAKALMUR"],
+                "DAKSHINA KANNADA": ["BANTWAL","BELTHANGADY","KADABA","MANGALORE","MUDABIDRE","PUTTUR","SULLIA"],
+                "DAVANAGERE": ["CHANNAGIRI","DAVANAGERE","HARIHAR","HONNALI","JAGALUR","NYAMATI"],
+                "DHARWADA": ["ALNAVARA","ANNIGERI","DHARWAD","HUBLI","HUBLI NAGARA","KALGATIGI","KUNDGOL","NAVALGUND"],
+                "GADAG": ["GADAG","GAJENDRAGAD","LAKSHMESHWAR","MUNDARGI","NARAGUND","RON","SHIRAHATTI"],
+                "HASSAN": ["ALUR","ARKALGUD","ARSIKERE","BELUR","CHANRAYAPATNA","HASSAN","HOLENARASIPURA","SAKLESHPURA"],
+                "HAVERI": ["BYADAGI","HANGAL","HAVERI","HIREKERUR","RANEBENNUR","RATTEEHALLI","SAVANUR","SHIGGAON"],
+                "KALABURAGI": ["AFZALPUR","ALAND","CHINCHOLI","CHITTAPUR","GULBARGA","JEVARGI","KALAGI","KAMALAPURA","SEDAM","SHAHABADA","YEDRAMI"],
+                "KODAGU": ["MADIKERI","SOMAWARPET","VIRAJPET"],
+                "KOLARA": ["BANGARPET","K.G.F","KOLAR","MALLUR","MULBAGAL","SRINIVASPURA"],
+                "KOPPALA": ["GANGAVATHI","KANAKAGIRI","KARATAGI","KOPPAL","KUKANURA","KUSHTAGI","YELBURGA"],
+                "MANDYA": ["K.R.PET","MADDUR","MALAVALLI","MANDYA","NAGMANGALA","PANDAVAPURA","SRIRANGAPATNA"],
+                "MYSURU": ["HEGGADADEVANKOTE","HUNSUR","K.R.NAGAR","MYSORE","NANJANGUD","PERIYAPATANA","SARAGURU","T-NARSIPUR"],
+                "RAICHURU": ["DEVDURGA","LINGASUGUR","MANVI","MASKI","RAICHUR","SINDHANUR","SIRIVARA"],
+                "RAMANAGARA": ["CHANNAPATNA","KANAKPURA","MAGADI","RAMANAGAR"],
+                "SHIVAMOGGA": ["BHADRAVATHI","HOSANAGAR","SAGAR","SHIKARIPURA","SHIMOGA","SORAB","THIRTHALLI"],
+                "TUMAKURU": ["CHIKNAYAKANAHALLI","GUBBI","KORATAGERE","KUNIGAL","MADHUGIRI","PAVAGADA","SIRA","TIPTUR","TUMKUR","TURUVEKERE"],
+                "UDUPI": ["BRAHMAVARA","BYANDUR","HEBRI","KAAPU","KARKALA","KUNDAPURA","UDUPI"],
+                "UTTARA KANNADA": ["ANKOLA","BHATKAL","DANDELI","HALIYAL","HONNAVAR","JOIDA","KARWAR","KUMTA","MUNDGOD","SIDDAPUR","SIRSI","YELLAPUR"],
+                "VIJAYAPURA": ["BABALESHWAR","BASVANA BAGEWADI","BIJAPUR","CHADACHAN","DEVARA HIPPARAGI","INDI","KOLHARA","MUDDEBIHAL","NIDAGUNDI","SINDAGI","TALIKOTE","THIKOTA"],
+                "YADAGIRI": ["GURMITKAL","HUNISIGI","SHAHAPUR","SHORAPUR","VADAGERA","YADGIR"]
+            };
+
+            const selectedTaluk = "{{ taluk }}";
+
+            function populateTaluks(preselect) {
+                const districtSel = document.getElementById('district');
+                const talukSel = document.getElementById('taluk');
+                const district = districtSel.value;
+                const taluks = districtTaluks[district] || [];
+
+                talukSel.innerHTML = taluks.length
+                    ? '<option value="" disabled>-- Select Taluk --</option>'
+                    : '<option value="" disabled selected>-- Select District First --</option>';
+
+                taluks.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t;
+                    opt.textContent = t.charAt(0) + t.slice(1).toLowerCase();
+                    if (preselect && t === preselect) opt.selected = true;
+                    talukSel.appendChild(opt);
+                });
+
+                if (!preselect && taluks.length) talukSel.options[0].selected = true;
+            }
+
+            // On page load, pre-populate if district was submitted
+            window.addEventListener('DOMContentLoaded', () => {
+                const d = document.getElementById('district').value;
+                if (d) populateTaluks(selectedTaluk || null);
+            });
+        </script>
+
+        {% if result != None or status != None %}
+        <div class="results">
+            <h2>Recommended Seeds</h2>
+            
+            <div class="status-message">
+                <i class="fas fa-info-circle"></i> {{ status }}
+            </div>
+            
+            {% if result %}
+                <ul class="crop-list">
+                    {% for item in result %}
+                    <li class="crop-item">
+                        <div class="crop-details">
+                            <div class="crop-name">{{ item.crop }}</div>
+                            {% if item.market_price %}
+                            <div class="crop-market-info">
+                                <span class="market-price"><i class="fas fa-tag"></i> {{ item.market_price }}</span>
+                                <p class="sales-trend"><i class="fas fa-chart-line"></i> {{ item.sales_trend }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="crop-value">{{ item.value }}</div>
+                    </li>
+                    {% endfor %}
+                    <!-- WAIT! The syntax of 'endfor' in Jinja2 -->
+                </ul>
+            {% else %}
+                <p style="color: #e74c3c; font-weight: 600;">No recommendations could be generated for "{{ district }}", "{{ taluk }}".</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
